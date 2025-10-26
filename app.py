@@ -14,7 +14,7 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 PRIMES = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37}
 
 def read_file(filepath):
-    if filepath.endswith(".csv"):
+    if filepath.lower().endswith(".csv"):
         df = pd.read_csv(filepath, header=None)
     else:
         df = pd.read_excel(filepath, header=None)
@@ -34,7 +34,7 @@ def build_pool(df, exclude_10_20_30=False):
 
     pool = [n for n in numbers if n not in removed]
 
-    # ✅ user option: exclude 10,20,30
+    # user option: exclude 10,20,30
     if exclude_10_20_30:
         pool = [n for n in pool if n not in {10, 20, 30}]
         removed.update({10, 20, 30})
@@ -60,11 +60,11 @@ def has_invalid_sequences(combo):
             if consecutive_streak == 2:
                 consecutive_pairs += 1
             if consecutive_streak > 2:
-                return True  # ❌ found more than 2 consecutive
+                return True  # found more than 2 consecutive
         else:
             consecutive_streak = 1
 
-    # ❌ more than one pair of consecutive numbers
+    # more than one pair of consecutive numbers
     if consecutive_pairs > 1:
         return True
 
@@ -95,7 +95,7 @@ def generate_combinations(pool, last_game, removed, unseen, df):
         combo = random.sample(pool, 6)
         combo_set = set(combo)
 
-        # ❌ check sequences rule
+        # sequences rule
         if has_invalid_sequences(combo):
             continue
 
@@ -131,7 +131,7 @@ def generate_combinations(pool, last_game, removed, unseen, df):
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
-        file = request.files["file"]
+        file = request.files.get("file")
         if not file:
             return render_template("index.html", error="No file uploaded")
         filename = secure_filename(file.filename)
@@ -145,12 +145,14 @@ def index():
         unseen = unseen_last10(df)
         combos = generate_combinations(pool, last_game, removed, unseen, df)
 
-        return render_template("index.html",
-                               pool=pool,
-                               removed=sorted(list(removed)),
-                               last_game=list(last_game),
-                               unseen=unseen,
-                               combos=combos)
+        return render_template(
+            "index.html",
+            pool=pool,
+            removed=sorted(list(removed)),
+            last_game=list(last_game),
+            unseen=unseen,
+            combos=combos
+        )
     return render_template("index.html")
 
 @app.route("/download", methods=["POST"])
@@ -171,4 +173,6 @@ def download():
     return send_file(mem, mimetype="text/csv", as_attachment=True, download_name="combinations.csv")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # IMPORTANT for Render.com: bind to 0.0.0.0 and use the assigned PORT
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
