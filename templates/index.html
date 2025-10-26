@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>6-Number Combination Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            background: #0073e6;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            padding: 15px;
+            max-width: 800px;
+        }
+        .numbers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .num {
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            color: white;
+        }
+        .pool { background: #0073e6; }
+        .removed { background: #e63946; }
+        .last { background: #ff9f1c; }
+        .unseen { background: #2a9d8f; }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        ul li {
+            background: #f0f0f0;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+        button {
+            background: #0073e6;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #005bb5;
+        }
+        .upload {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>6-Number Combination Generator</h1>
+
+    <div class="upload">
+        <form method="POST" enctype="multipart/form-data">
+            <input type="file" name="file" required><br><br>
+            <label>
+                <input type="checkbox" name="exclude_10_20_30" checked>
+                Exclude 10, 20, 30
+            </label>
+            <br><br>
+            <button type="submit">Generate</button>
+        </form>
+    </div>
+
+    {% if pool %}
+        <div class="section">
+            <h2>Pool of Numbers</h2>
+            <div class="numbers">
+                {% for n in pool %}
+                    <div class="num pool">{{ n }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Removed Numbers</h2>
+            <div class="numbers">
+                {% for n in removed %}
+                    <div class="num removed">{{ n }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Last Game Numbers</h2>
+            <div class="numbers">
+                {% for n in last_game %}
+                    <div class="num last">{{ n }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Unseen in Last 10 Games</h2>
+            <div class="numbers">
+                {% for n in unseen %}
+                    <div class="num unseen">{{ n }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Generated Combinations</h2>
+            <ul>
+            {% for combo in combos %}
+                <li>{{ combo }}</li>
+            {% endfor %}
+            </ul>
+            <form action="/download" method="POST">
+                <input type="hidden" name="combos" value="{{ combos }}">
+                <button type="submit">Download CSV</button>
+            </form>
+        </div>
+    {% endif %}
+</body>
+</html>
